@@ -1,0 +1,96 @@
+/* === GEMINUS DARK FANTASY RPG THEME === */
+
+/* --- Molten Core Theme Variables --- */
+:root {
+    --highlight-orange: #f97316;
+    --glow-red: #ef4444;
+    --text-primary: #f0f0f0;
+    --text-secondary: #a0a0a0;
+    --panel-bg: rgba(20, 20, 22, 0.75);
+    --input-bg: rgba(0, 0, 0, 0.4);
+    --border-color-main: rgba(249, 115, 22, 0.4);
+    --border-color-pulse: rgba(239, 68, 68, 0.7);
+
+    /* --- Combat & UI Colors (PRESERVED) --- */
+    --color-text-health: #00BFFF; /* 🔵 */
+    --color-text-exp: #0BDA51; /* 🟢 */
+    --color-text-next-level: #BF00FF; /* 🟣 */
+    --color-text-drop: #FF7518; /* 🟠 */
+    --color-text-level: #00BFFF; /* 🔵 */
+    --color-text-gold: #EFBF04; /* 🟡 */
+    --color-text-location: #FF1D15; /* 🔴 */
+    --color-status-ok: #7CB342;
+    --color-status-warn: #FDD835;
+    --color-status-danger: #D32F2F;
+    --hp-color: #E53935;
+}
+
+/* --- Base Typography --- */
+html, body { 
+    height: 100%; 
+    overflow: hidden; 
+}
+
+body { 
+    font-family: 'Inter', sans-serif; 
+    color: var(--text-primary); 
+    background-color: #121212; 
+    -webkit-user-select: none; 
+    user-select: none; 
+    touch-action: none; 
+}
+
+.font-orbitron { 
+    font-family: 'Orbitron', sans-serif; 
+    color: var(--text-primary); 
+    text-shadow: 0 0 8px rgba(249, 115, 22, 0.5); 
+}
+
+/* --- Scrollbar Theming --- */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { 
+    background-color: rgba(249, 115, 22, 0.4); 
+    border-radius: 3px; 
+}
+
+.custom-scrollbar-x::-webkit-scrollbar { height: 4px; }
+.custom-scrollbar-x::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar-x::-webkit-scrollbar-thumb { 
+    background-color: rgba(249, 115, 22, 0.4); 
+    border-radius: 2px; 
+}
+
+/* --- Status Colors --- */
+.status-ok { color: var(--color-status-ok) !important; }
+.status-warn { color: var(--color-status-warn) !important; }
+.status-danger { color: var(--color-status-danger) !important; }
+
+/* --- Combat Stats Colors (PRESERVED) --- */
+.label-location { color: var(--color-text-location); }
+.label-health { color: var(--color-text-health); }
+.label-exp { color: var(--color-text-exp); }
+.label-next-level { color: var(--color-text-next-level); }
+.label-drop { color: var(--color-text-drop); }
+.label-level { color: var(--color-text-level); }
+.label-gold { color: var(--color-text-gold); }
+#gold-value { color: var(--color-text-gold); }
+
+/* --- Quest Styling --- */
+.quest-reward-gold { color: var(--color-text-gold); }
+.quest-reward-xp { color: var(--color-text-exp); }
+
+/* --- Monster HP Styling --- */
+#monster-hp-text { 
+    color: var(--glow-red); 
+    font-weight: bold; 
+    text-shadow: 0 0 5px var(--glow-red); 
+}
+
+#enemy-defeated-msg { 
+    font-size: 1.5rem; 
+    color: var(--glow-red); 
+    font-weight: bold; 
+    display: none; 
+    font-family: 'Orbitron'; 
+}
