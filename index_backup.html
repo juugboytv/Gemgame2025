@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Geminus - Dark Fantasy RPG (GDD Integrated)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+    /* --- Molten Core Theme --- */
+    :root {
+        --highlight-orange: #f97316;
+        --glow-red: #ef4444;
+        --text-primary: #f0f0f0;
+        --text-secondary: #a0a0a0;
+        --panel-bg: rgba(20, 20, 22, 0.75);
+        --input-bg: rgba(0, 0, 0, 0.4);
+        --border-color-main: rgba(249, 115, 22, 0.4);
+        --border-color-pulse: rgba(239, 68, 68, 0.7);
+
+        /* --- Combat & UI Colors (PRESERVED) --- */
+        --color-text-health: #00BFFF; /* 🔵 */
+        --color-text-exp: #0BDA51; /* 🟢 */
+        --color-text-next-level: #BF00FF; /* 🟣 */
+        --color-text-drop: #FF7518; /* 🟠 */
+        --color-text-level: #00BFFF; /* 🔵 */
+        --color-text-gold: #EFBF04; /* 🟡 */
+        --color-text-location: #FF1D15; /* 🔴 */
+        --color-status-ok: #7CB342;
+        --color-status-warn: #FDD835;
+        --color-status-danger: #D32F2F;
+        --hp-color: #E53935;
+    }
+
+    @keyframes pulse-border {
+        0%, 100% {
+            border-color: var(--border-color-main);
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.2), 0 4px 30px rgba(0, 0, 0, 0.6);
+        }
+        50% {
+            border-color: var(--border-color-pulse);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.4), 0 4px 30px rgba(0, 0, 0, 0.6);
+        }
+    }
+    
+    @keyframes pulse-main-tab-glow {
+        0%, 100% {
+            border-bottom-color: var(--highlight-orange);
+            text-shadow: 0 0 8px var(--highlight-orange);
+        }
+        50% {
+            border-bottom-color: var(--glow-red);
+            text-shadow: 0 0 12px var(--glow-red);
+        }
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+    body { 
+        font-family: 'Inter', sans-serif; 
+        color: var(--text-primary); 
+        background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+        -webkit-user-select: none; 
+        user-select: none; 
+        touch-action: none; 
+    }
+    
+    .font-orbitron { 
+        font-family: 'Orbitron', sans-serif; 
+        color: var(--text-primary); 
+        text-shadow: 0 0 8px rgba(249, 115, 22, 0.5); 
+    }
+    
+    .glass-panel { 
+        background: var(--panel-bg); 
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid;
+        animation: pulse-border 4s ease-in-out infinite;
+        border-radius: 8px;
+    }
+    
+    .glass-button { 
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(249, 115, 22, 0.25);
+        color: var(--text-primary);
+        transition: all 0.2s ease-in-out;
+        display: flex; 
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .glass-button:hover {
+        background: rgba(249, 115, 22, 0.1);
+        border-color: var(--highlight-orange);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+    }
+
+    .glass-button:active {
+        transform: translateY(0px);
+    }
+
+    .glass-input {
+        background: var(--input-bg);
+        border: 1px solid rgba(249, 115, 22, 0.3);
+        color: var(--text-primary);
+        padding: 10px 15px;
+        border-radius: 6px;
+        outline: none;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .glass-input:focus {
+        border-color: var(--highlight-orange);
+        box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+    }
+
+    .tab-active {
+        background: rgba(249, 115, 22, 0.2);
+        border-color: var(--highlight-orange);
+        animation: pulse-main-tab-glow 3s ease-in-out infinite;
+    }
+
+    .health-bar {
+        background: linear-gradient(90deg, var(--hp-color) 0%, #ff6b6b 100%);
+        height: 8px;
+        border-radius: 4px;
+        transition: width 0.3s ease-in-out;
+    }
+
+    .exp-bar {
+        background: linear-gradient(90deg, var(--color-text-exp) 0%, #4ade80 100%);
+        height: 6px;
+        border-radius: 3px;
+        transition: width 0.3s ease-in-out;
+    }
+
+    .floating-damage {
+        position: absolute;
+        font-weight: bold;
+        font-size: 18px;
+        color: var(--glow-red);
+        text-shadow: 0 0 10px var(--glow-red);
+        animation: float 1s ease-out forwards;
+        pointer-events: none;
+    }
+
+    .shimmer-text {
+        background: linear-gradient(90deg, var(--text-primary) 0%, var(--highlight-orange) 50%, var(--text-primary) 100%);
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 2s ease-in-out infinite;
+    }
+
+    .equipment-slot {
+        width: 60px;
+        height: 60px;
+        border: 2px solid rgba(249, 115, 22, 0.3);
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .equipment-slot:hover {
+        border-color: var(--highlight-orange);
+        background: rgba(249, 115, 22, 0.1);
+    }
+
+    .inventory-item {
+        border: 1px solid rgba(249, 115, 22, 0.2);
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 6px;
+        padding: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .inventory-item:hover {
+        border-color: var(--highlight-orange);
+        background: rgba(249, 115, 22, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .rarity-common { border-left: 4px solid #9ca3af; }
+    .rarity-uncommon { border-left: 4px solid #10b981; }
+    .rarity-rare { border-left: 4px solid #3b82f6; }
+    .rarity-epic { border-left: 4px solid #a855f7; }
+    .rarity-legendary { border-left: 4px solid #f59e0b; }
+
+    .hidden { display: none !important; }
+
+    .combat-action {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%);
+        border: 1px solid rgba(249, 115, 22, 0.3);
+        border-radius: 8px;
+        padding: 15px;
+        margin: 5px 0;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .combat-action:hover {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.2) 0%, rgba(239, 68, 68, 0.2) 100%);
+        border-color: var(--highlight-orange);
+        transform: translateX(5px);
+    }
+</style>
+</head>
+
+<body class="relative">
+    <!-- Background Particles -->
+    <div id="particles-bg" class="fixed inset-0 pointer-events-none z-0">
+        <canvas id="particles-canvas" class="w-full h-full"></canvas>
+    </div>
+
+    <!-- Main Game Container -->
+    <div class="relative z-10 h-screen flex flex-col">
+        <!-- Header -->
+        <header class="glass-panel p-4 m-2 mb-0">
+            <div class="flex items-center justify-between">
+                <h1 class="font-orbitron text-2xl font-bold shimmer-text">Geminus</h1>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm">
+                        <span style="color: var(--color-text-gold);">⚜ </span>
+                        <span id="player-gold" style="color: var(--color-text-gold);">0</span>
+                    </div>
+                    <div class="text-sm">
+                        <span style="color: var(--color-text-location);">📍 </span>
+                        <span id="current-location" style="color: var(--color-text-location);">Character Creation</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex p-2 space-x-2 overflow-hidden">
+            <!-- Left Panel - Character/Stats -->
+            <div class="w-80 glass-panel p-4 flex flex-col space-y-4">
+                <!-- Character Portrait & Basic Info -->
+                <div class="text-center">
+                    <div class="w-32 h-32 mx-auto bg-gray-700 rounded-full border-2 border-orange-500 mb-3 flex items-center justify-center">
+                        <span class="text-4xl" id="character-avatar">⚔️</span>
+                    </div>
+                    <h2 class="font-orbitron text-lg font-bold" id="character-name">Create Character</h2>
+                    <p class="text-sm text-gray-400" id="character-class">Choose your path</p>
+                </div>
+
+                <!-- Character Stats -->
+                <div id="character-stats" class="space-y-3 hidden">
+                    <!-- Health Bar -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span style="color: var(--color-text-health);">Health</span>
+                            <span><span id="current-hp">100</span>/<span id="max-hp">100</span></span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="health-bar" id="hp-bar" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Experience Bar -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span style="color: var(--color-text-exp);">Experience</span>
+                            <span style="color: var(--color-text-level);">Level <span id="character-level">1</span></span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="exp-bar" id="exp-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-1">
+                            <span id="current-exp">0</span>/<span id="exp-to-next">100</span> XP
+                        </div>
+                    </div>
+
+                    <!-- Core Stats -->
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="bg-black bg-opacity-30 p-2 rounded">
+                            <div class="text-gray-400">Strength</div>
+                            <div class="font-bold" id="stat-strength">10</div>
+                        </div>
+                        <div class="bg-black bg-opacity-30 p-2 rounded">
+                            <div class="text-gray-400">Dexterity</div>
+                            <div class="font-bold" id="stat-dexterity">10</div>
+                        </div>
+                        <div class="bg-black bg-opacity-30 p-2 rounded">
+                            <div class="text-gray-400">Intelligence</div>
+                            <div class="font-bold" id="stat-intelligence">10</div>
+                        </div>
+                        <div class="bg-black bg-opacity-30 p-2 rounded">
+                            <div class="text-gray-400">Constitution</div>
+                            <div class="font-bold" id="stat-constitution">10</div>
+                        </div>
+                    </div>
+
+                    <!-- Equipment Slots -->
+                    <div>
+                        <h3 class="text-sm font-bold mb-2 text-orange-400">Equipment</h3>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="equipment-slot" data-slot="weapon" title="Weapon">⚔️</div>
+                            <div class="equipment-slot" data-slot="armor" title="Armor">🛡️</div>
+                            <div class="equipment-slot" data-slot="accessory" title="Accessory">💍</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Panel - Main Game Content -->
+            <div class="flex-1 glass-panel p-4 flex flex-col">
+                <!-- Tab Navigation -->
+                <div class="flex space-x-1 mb-4 border-b border-gray-600">
+                    <button class="tab-button tab-active px-4 py-2 font-medium transition-all duration-200" data-tab="creation">
+                        Character Creation
+                    </button>
+                    <button class="tab-button px-4 py-2 font-medium transition-all duration-200 hidden" data-tab="exploration">
+                        Exploration
+                    </button>
+                    <button class="tab-button px-4 py-2 font-medium transition-all duration-200 hidden" data-tab="combat">
+                        Combat
+                    </button>
+                    <button class="tab-button px-4 py-2 font-medium transition-all duration-200 hidden" data-tab="inventory">
+                        Inventory
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="flex-1 overflow-auto">
+                    <!-- Character Creation Tab -->
+                    <div id="tab-creation" class="tab-content">
+                        <div class="max-w-md mx-auto space-y-6">
+                            <div class="text-center">
+                                <h2 class="font-orbitron text-2xl font-bold mb-2">Create Your Character</h2>
+                                <p class="text-gray-400">Choose your path in the dark realm of Geminus</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Character Name</label>
+                                <input type="text" id="name-input" class="glass-input w-full" placeholder="Enter your name..." maxlength="20">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Choose Your Class</label>
+                                <div class="space-y-2">
+                                    <div class="glass-button w-full class-option" data-class="warrior">
+                                        <div class="flex items-center">
+                                            <span class="text-2xl mr-3">⚔️</span>
+                                            <div class="text-left">
+                                                <div class="font-bold">Warrior</div>
+                                                <div class="text-sm text-gray-400">Master of melee combat and defense</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="glass-button w-full class-option" data-class="mage">
+                                        <div class="flex items-center">
+                                            <span class="text-2xl mr-3">🔮</span>
+                                            <div class="text-left">
+                                                <div class="font-bold">Mage</div>
+                                                <div class="text-sm text-gray-400">Wielder of arcane magic and spells</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="glass-button w-full class-option" data-class="rogue">
+                                        <div class="flex items-center">
+                                            <span class="text-2xl mr-3">🗡️</span>
+                                            <div class="text-left">
+                                                <div class="font-bold">Rogue</div>
+                                                <div class="text-sm text-gray-400">Swift and deadly, master of stealth</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button id="create-character-btn" class="glass-button w-full bg-orange-600 bg-opacity-20 border-orange-500 text-lg font-bold" disabled>
+                                Begin Your Journey
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Exploration Tab -->
+                    <div id="tab-exploration" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <div class="text-center">
+                                <h2 class="font-orbitron text-xl font-bold mb-2">Exploration</h2>
+                                <p class="text-gray-400" id="exploration-description">Choose your path through the dark realm...</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="exploration-options">
+                                <!-- Dynamic exploration options will be inserted here -->
+                            </div>
+
+                            <div id="exploration-result" class="hidden bg-black bg-opacity-30 p-4 rounded-lg">
+                                <p id="exploration-text"></p>
+                                <div id="exploration-actions" class="mt-4 space-y-2">
+                                    <!-- Dynamic action buttons will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Combat Tab -->
+                    <div id="tab-combat" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <div class="text-center">
+                                <h2 class="font-orbitron text-xl font-bold mb-2" style="color: var(--glow-red);">Combat</h2>
+                                <p class="text-gray-400">Face your enemies in deadly battle!</p>
+                            </div>
+
+                            <!-- Enemy Information -->
+                            <div id="enemy-info" class="bg-black bg-opacity-30 p-4 rounded-lg">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="font-bold text-lg" id="enemy-name">Shadow Beast</h3>
+                                    <span class="text-red-400" id="enemy-level">Level 1</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-3 mb-2">
+                                    <div class="health-bar" id="enemy-hp-bar" style="width: 100%"></div>
+                                </div>
+                                <div class="text-sm text-gray-400">
+                                    <span id="enemy-hp">50</span>/<span id="enemy-max-hp">50</span> HP
+                                </div>
+                            </div>
+
+                            <!-- Combat Actions -->
+                            <div class="space-y-2" id="combat-actions">
+                                <div class="combat-action" data-action="attack">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold">⚔️ Attack</span>
+                                        <span class="text-sm text-gray-400">Deal damage to enemy</span>
+                                    </div>
+                                </div>
+                                <div class="combat-action" data-action="defend">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold">🛡️ Defend</span>
+                                        <span class="text-sm text-gray-400">Reduce incoming damage</span>
+                                    </div>
+                                </div>
+                                <div class="combat-action" data-action="special">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold">✨ Special Ability</span>
+                                        <span class="text-sm text-gray-400">Use class ability</span>
+                                    </div>
+                                </div>
+                                <div class="combat-action" data-action="flee">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold">🏃 Flee</span>
+                                        <span class="text-sm text-gray-400">Attempt to escape</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Combat Log -->
+                            <div class="bg-black bg-opacity-50 p-3 rounded-lg h-32 overflow-y-auto">
+                                <div id="combat-log" class="text-sm space-y-1">
+                                    <p class="text-gray-400">Combat begins...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Tab -->
+                    <div id="tab-inventory" class="tab-content hidden">
+                        <div class="space-y-4">
+                            <div class="text-center">
+                                <h2 class="font-orbitron text-xl font-bold mb-2">Inventory</h2>
+                                <p class="text-gray-400">Manage your items and equipment</p>
+                            </div>
+
+                            <!-- Inventory Grid -->
+                            <div class="grid grid-cols-4 md:grid-cols-6 gap-2" id="inventory-grid">
+                                <!-- Dynamic inventory slots will be generated here -->
+                            </div>
+
+                            <!-- Item Details -->
+                            <div id="item-details" class="hidden bg-black bg-opacity-30 p-4 rounded-lg">
+                                <h3 class="font-bold text-lg mb-2" id="item-name"></h3>
+                                <p class="text-sm text-gray-400 mb-3" id="item-description"></p>
+                                <div id="item-stats" class="space-y-1 text-sm mb-3"></div>
+                                <div class="flex space-x-2">
+                                    <button id="equip-item-btn" class="glass-button flex-1 hidden">Equip</button>
+                                    <button id="use-item-btn" class="glass-button flex-1 hidden">Use</button>
+                                    <button id="sell-item-btn" class="glass-button flex-1">Sell</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Combat Text Container -->
+    <div id="floating-text-container" class="fixed inset-0 pointer-events-none z-50"></div>
+
+    <script>
+        // Game State
+        const gameState = {
+            player: {
+                name: '',
+                class: '',
+                level: 1,
+                hp: 100,
+                maxHp: 100,
+                exp: 0,
+                expToNext: 100,
+                gold: 0,
+                stats: {
+                    strength: 10,
+                    dexterity: 10,
+                    intelligence: 10,
+                    constitution: 10
+                },
+                equipment: {
+                    weapon: null,
+                    armor: null,
+                    accessory: null
+                },
+                inventory: []
+            },
+            currentTab: 'creation',
+            currentLocation: 'Character Creation',
+            combat: {
+                inCombat: false,
+                enemy: null,
+                isDefending: false
+            }
+        };
+
+        // Game Data
+        const classData = {
+            warrior: {
+                name: 'Warrior',
+                avatar: '⚔️',
+                stats: { strength: 15, dexterity: 8, intelligence: 6, constitution: 14 },
+                special: 'Berserker Rage'
+            },
+            mage: {
+                name: 'Mage',
+                avatar: '🔮',
+                stats: { strength: 6, dexterity: 8, intelligence: 15, constitution: 10 },
+                special: 'Arcane Blast'
+            },
+            rogue: {
+                name: 'Rogue',
+                avatar: '🗡️',
+                stats: { strength: 10, dexterity: 15, intelligence: 12, constitution: 8 },
+                special: 'Shadow Strike'
+            }
+        };
+
+        const locations = [
+            {
+                name: 'Dark Forest',
+                description: 'Ancient trees whisper dark secrets. Danger lurks in every shadow.',
+                encounters: ['Shadow Wolf', 'Dark Sprite', 'Corrupted Treant']
+            },
+            {
+                name: 'Abandoned Mine',
+                description: 'Deep tunnels filled with precious gems... and deadly creatures.',
+                encounters: ['Cave Goblin', 'Stone Golem', 'Underground Wraith']
+            },
+            {
+                name: 'Haunted Ruins',
+                description: 'Crumbling structures from a forgotten civilization.',
+                encounters: ['Skeleton Warrior', 'Phantom Mage', 'Ancient Guardian']
+            }
+        ];
+
+        const enemies = {
+            'Shadow Wolf': { hp: 45, maxHp: 45, level: 1, exp: 15, gold: 5 },
+            'Dark Sprite': { hp: 30, maxHp: 30, level: 1, exp: 12, gold: 8 },
+            'Corrupted Treant': { hp: 80, maxHp: 80, level: 2, exp: 25, gold: 12 },
+            'Cave Goblin': { hp: 35, maxHp: 35, level: 1, exp: 10, gold: 6 },
+            'Stone Golem': { hp: 120, maxHp: 120, level: 3, exp: 40, gold: 20 },
+            'Underground Wraith': { hp: 60, maxHp: 60, level: 2, exp: 30, gold: 15 },
+            'Skeleton Warrior': { hp: 55, maxHp: 55, level: 2, exp: 20, gold: 10 },
+            'Phantom Mage': { hp: 40, maxHp: 40, level: 2, exp: 25, gold: 18 },
+            'Ancient Guardian': { hp: 150, maxHp: 150, level: 4, exp: 60, gold: 35 }
+        };
+
+        const items = [
+            { name: 'Health Potion', type: 'consumable', rarity: 'common', description: 'Restores 50 HP', effect: 'heal', value: 50, sellPrice: 10 },
+            { name: 'Iron Sword', type: 'weapon', rarity: 'common', description: 'A sturdy iron blade', stats: { strength: 3 }, sellPrice: 25 },
+            { name: 'Leather Armor', type: 'armor', rarity: 'common', description: 'Basic protection', stats: { constitution: 2 }, sellPrice: 20 },
+            { name: 'Steel Sword', type: 'weapon', rarity: 'uncommon', description: 'A sharp steel blade', stats: { strength: 5 }, sellPrice: 50 },
+            { name: 'Magic Ring', type: 'accessory', rarity: 'rare', description: 'Increases magical power', stats: { intelligence: 4 }, sellPrice: 80 }
+        ];
+
+        // Particle System
+        class ParticleSystem {
+            constructor() {
+                this.canvas = document.getElementById('particles-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.resize();
+                this.init();
+                this.animate();
+                
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            init() {
+                for (let i = 0; i < 50; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        size: Math.random() * 2 + 1,
+                        speedX: (Math.random() - 0.5) * 0.5,
+                        speedY: (Math.random() - 0.5) * 0.5,
+                        opacity: Math.random() * 0.5 + 0.2
+                    });
+                }
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.particles.forEach(particle => {
+                    particle.x += particle.speedX;
+                    particle.y += particle.speedY;
+                    
+                    if (particle.x < 0 || particle.x > this.canvas.width) particle.speedX *= -1;
+                    if (particle.y < 0 || particle.y > this.canvas.height) particle.speedY *= -1;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    this.ctx.fillStyle = `rgba(249, 115, 22, ${particle.opacity})`;
+                    this.ctx.fill();
+                });
+                
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // UI Functions
+        function showFloatingText(text, x, y, color = '#ef4444') {
+            const container = document.getElementById('floating-text-container');
+            const element = document.createElement('div');
+            element.className = 'floating-damage';
+            element.textContent = text;
+            element.style.left = x + 'px';
+            element.style.top = y + 'px';
+            element.style.color = color;
+            container.appendChild(element);
+            
+            setTimeout(() => {
+                container.removeChild(element);
+            }, 1000);
+        }
+
+        function updateCharacterDisplay() {
+            const player = gameState.player;
+            
+            document.getElementById('character-name').textContent = player.name;
+            document.getElementById('character-class').textContent = classData[player.class]?.name || 'Choose your path';
+            document.getElementById('character-avatar').textContent = classData[player.class]?.avatar || '⚔️';
+            
+            // Update stats
+            document.getElementById('current-hp').textContent = player.hp;
+            document.getElementById('max-hp').textContent = player.maxHp;
+            document.getElementById('character-level').textContent = player.level;
+            document.getElementById('current-exp').textContent = player.exp;
+            document.getElementById('exp-to-next').textContent = player.expToNext;
+            document.getElementById('player-gold').textContent = player.gold;
+            
+            // Update bars
+            const hpPercent = (player.hp / player.maxHp) * 100;
+            const expPercent = (player.exp / player.expToNext) * 100;
+            document.getElementById('hp-bar').style.width = hpPercent + '%';
+            document.getElementById('exp-bar').style.width = expPercent + '%';
+            
+            // Update stat values
+            Object.keys(player.stats).forEach(stat => {
+                document.getElementById(`stat-${stat}`).textContent = player.stats[stat];
+            });
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('tab-active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('tab-active');
+            
+            gameState.currentTab = tabName;
+        }
+
+        function startGame() {
+            // Show game tabs
+            document.querySelectorAll('.tab-button:not([data-tab="creation"])').forEach(btn => {
+                btn.classList.remove('hidden');
+            });
+            
+            // Show character stats
+            document.getElementById('character-stats').classList.remove('hidden');
+            
+            // Switch to exploration
+            switchTab('exploration');
+            gameState.currentLocation = 'Town Square';
+            document.getElementById('current-location').textContent = gameState.currentLocation;
+            
+            // Initialize exploration
+            setupExploration();
+            
+            // Initialize inventory
+            initializeInventory();
+        }
+
+        function setupExploration() {
+            const container = document.getElementById('exploration-options');
+            container.innerHTML = '';
+            
+            locations.forEach(location => {
+                const option = document.createElement('div');
+                option.className = 'glass-button text-left p-4';
+                option.innerHTML = `
+                    <div class="font-bold text-lg mb-2">${location.name}</div>
+                    <div class="text-sm text-gray-400">${location.description}</div>
+                `;
+                option.addEventListener('click', () => exploreLocation(location));
+                container.appendChild(option);
+            });
+        }
+
+        function exploreLocation(location) {
+            gameState.currentLocation = location.name;
+            document.getElementById('current-location').textContent = location.name;
+            
+            const resultContainer = document.getElementById('exploration-result');
+            const textElement = document.getElementById('exploration-text');
+            const actionsContainer = document.getElementById('exploration-actions');
+            
+            // Random encounter chance
+            if (Math.random() < 0.7) {
+                const enemy = location.encounters[Math.floor(Math.random() * location.encounters.length)];
+                textElement.textContent = `A wild ${enemy} appears! What do you do?`;
+                
+                actionsContainer.innerHTML = `
+                    <button class="glass-button" onclick="startCombat('${enemy}')">Fight</button>
+                    <button class="glass-button" onclick="setupExploration(); document.getElementById('exploration-result').classList.add('hidden');">Flee</button>
+                `;
+            } else {
+                // Safe exploration - find treasure
+                const goldFound = Math.floor(Math.random() * 20) + 10;
+                gameState.player.gold += goldFound;
+                textElement.textContent = `You explore the area safely and find ${goldFound} gold!`;
+                
+                // Chance to find item
+                if (Math.random() < 0.3) {
+                    const item = items[Math.floor(Math.random() * items.length)];
+                    gameState.player.inventory.push({...item, id: Date.now()});
+                    textElement.textContent += ` You also found a ${item.name}!`;
+                }
+                
+                actionsContainer.innerHTML = `
+                    <button class="glass-button" onclick="setupExploration(); document.getElementById('exploration-result').classList.add('hidden');">Continue Exploring</button>
+                `;
+                
+                updateCharacterDisplay();
+            }
+            
+            resultContainer.classList.remove('hidden');
+        }
+
+        function startCombat(enemyName) {
+            gameState.combat.inCombat = true;
+            gameState.combat.enemy = {
+                name: enemyName,
+                ...enemies[enemyName]
+            };
+            gameState.combat.isDefending = false;
+            
+            switchTab('combat');
+            updateCombatDisplay();
+            addCombatLog(`Combat begins against ${enemyName}!`);
+        }
+
+        function updateCombatDisplay() {
+            const enemy = gameState.combat.enemy;
+            document.getElementById('enemy-name').textContent = enemy.name;
+            document.getElementById('enemy-level').textContent = `Level ${enemy.level}`;
+            document.getElementById('enemy-hp').textContent = enemy.hp;
+            document.getElementById('enemy-max-hp').textContent = enemy.maxHp;
+            
+            const enemyHpPercent = (enemy.hp / enemy.maxHp) * 100;
+            document.getElementById('enemy-hp-bar').style.width = enemyHpPercent + '%';
+        }
+
+        function addCombatLog(message) {
+            const log = document.getElementById('combat-log');
+            const entry = document.createElement('p');
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function performCombatAction(action) {
+            const player = gameState.player;
+            const enemy = gameState.combat.enemy;
+            
+            let playerDamage = 0;
+            let enemyDamage = 0;
+            
+            switch (action) {
+                case 'attack':
+                    playerDamage = Math.floor(Math.random() * player.stats.strength) + 5;
+                    enemy.hp = Math.max(0, enemy.hp - playerDamage);
+                    addCombatLog(`You attack for ${playerDamage} damage!`);
+                    showFloatingText(`-${playerDamage}`, 400, 200, '#ff6b6b');
+                    break;
+                    
+                case 'defend':
+                    gameState.combat.isDefending = true;
+                    addCombatLog('You raise your guard!');
+                    break;
+                    
+                case 'special':
+                    const specialName = classData[player.class].special;
+                    playerDamage = Math.floor(Math.random() * (player.stats.strength + player.stats.intelligence)) + 10;
+                    enemy.hp = Math.max(0, enemy.hp - playerDamage);
+                    addCombatLog(`You use ${specialName} for ${playerDamage} damage!`);
+                    showFloatingText(`-${playerDamage}`, 400, 200, '#fbbf24');
+                    break;
+                    
+                case 'flee':
+                    if (Math.random() < 0.5) {
+                        addCombatLog('You successfully flee from combat!');
+                        endCombat(false);
+                        return;
+                    } else {
+                        addCombatLog('You failed to escape!');
+                    }
+                    break;
+            }
+            
+            // Check if enemy is defeated
+            if (enemy.hp <= 0) {
+                addCombatLog(`${enemy.name} is defeated!`);
+                
+                // Reward player
+                player.exp += enemy.exp;
+                player.gold += enemy.gold;
+                addCombatLog(`You gain ${enemy.exp} experience and ${enemy.gold} gold!`);
+                
+                // Check for level up
+                if (player.exp >= player.expToNext) {
+                    levelUp();
+                }
+                
+                // Chance for item drop
+                if (Math.random() < 0.4) {
+                    const item = items[Math.floor(Math.random() * items.length)];
+                    player.inventory.push({...item, id: Date.now()});
+                    addCombatLog(`${enemy.name} dropped a ${item.name}!`);
+                }
+                
+                endCombat(true);
+                return;
+            }
+            
+            // Enemy turn
+            setTimeout(() => {
+                enemyDamage = Math.floor(Math.random() * 15) + 5;
+                if (gameState.combat.isDefending) {
+                    enemyDamage = Math.floor(enemyDamage / 2);
+                    gameState.combat.isDefending = false;
+                }
+                
+                player.hp = Math.max(0, player.hp - enemyDamage);
+                addCombatLog(`${enemy.name} attacks you for ${enemyDamage} damage!`);
+                showFloatingText(`-${enemyDamage}`, 100, 300, '#ef4444');
+                
+                updateCharacterDisplay();
+                updateCombatDisplay();
+                
+                // Check if player is defeated
+                if (player.hp <= 0) {
+                    addCombatLog('You have been defeated!');
+                    // Respawn with half health
+                    player.hp = Math.floor(player.maxHp / 2);
+                    endCombat(false);
+                }
+            }, 1000);
+        }
+
+        function levelUp() {
+            const player = gameState.player;
+            player.level++;
+            player.exp -= player.expToNext;
+            player.expToNext = Math.floor(player.expToNext * 1.5);
+            
+            // Increase stats
+            const statIncrease = Math.floor(Math.random() * 3) + 1;
+            const statKeys = Object.keys(player.stats);
+            const randomStat = statKeys[Math.floor(Math.random() * statKeys.length)];
+            player.stats[randomStat] += statIncrease;
+            
+            // Increase max HP
+            const hpIncrease = player.stats.constitution * 2;
+            player.maxHp += hpIncrease;
+            player.hp = player.maxHp; // Full heal on level up
+            
+            addCombatLog(`Level Up! You are now level ${player.level}!`);
+            addCombatLog(`${randomStat.charAt(0).toUpperCase() + randomStat.slice(1)} increased by ${statIncrease}!`);
+            showFloatingText('LEVEL UP!', 300, 150, '#fbbf24');
+        }
+
+        function endCombat(victory) {
+            gameState.combat.inCombat = false;
+            gameState.combat.enemy = null;
+            
+            updateCharacterDisplay();
+            
+            setTimeout(() => {
+                if (victory) {
+                    switchTab('exploration');
+                    setupExploration();
+                    document.getElementById('exploration-result').classList.add('hidden');
+                } else {
+                    switchTab('exploration');
+                    gameState.currentLocation = 'Town Square';
+                    document.getElementById('current-location').textContent = gameState.currentLocation;
+                    setupExploration();
+                    document.getElementById('exploration-result').classList.add('hidden');
+                }
+            }, 2000);
+        }
+
+        function initializeInventory() {
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = '';
+            
+            // Create 24 inventory slots
+            for (let i = 0; i < 24; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'equipment-slot h-16 text-2xl';
+                slot.dataset.slot = i;
+                grid.appendChild(slot);
+            }
+            
+            updateInventoryDisplay();
+        }
+
+        function updateInventoryDisplay() {
+            const player = gameState.player;
+            const slots = document.querySelectorAll('#inventory-grid .equipment-slot');
+            
+            slots.forEach((slot, index) => {
+                const item = player.inventory[index];
+                if (item) {
+                    slot.textContent = getItemEmoji(item.type);
+                    slot.classList.add(`rarity-${item.rarity}`);
+                    slot.addEventListener('click', () => showItemDetails(item));
+                } else {
+                    slot.textContent = '';
+                    slot.className = 'equipment-slot h-16 text-2xl';
+                }
+            });
+        }
+
+        function getItemEmoji(type) {
+            const emojis = {
+                weapon: '⚔️',
+                armor: '🛡️',
+                accessory: '💍',
+                consumable: '🧪'
+            };
+            return emojis[type] || '📦';
+        }
+
+        function showItemDetails(item) {
+            document.getElementById('item-name').textContent = item.name;
+            document.getElementById('item-description').textContent = item.description;
+            
+            const statsContainer = document.getElementById('item-stats');
+            statsContainer.innerHTML = '';
+            
+            if (item.stats) {
+                Object.entries(item.stats).forEach(([stat, value]) => {
+                    const statElement = document.createElement('div');
+                    statElement.textContent = `${stat.charAt(0).toUpperCase() + stat.slice(1)}: +${value}`;
+                    statsContainer.appendChild(statElement);
+                });
+            }
+            
+            if (item.effect) {
+                const effectElement = document.createElement('div');
+                effectElement.textContent = `Effect: ${item.effect} ${item.value}`;
+                effectElement.style.color = 'var(--color-text-exp)';
+                statsContainer.appendChild(effectElement);
+            }
+            
+            // Show/hide action buttons
+            document.getElementById('equip-item-btn').classList.toggle('hidden', !['weapon', 'armor', 'accessory'].includes(item.type));
+            document.getElementById('use-item-btn').classList.toggle('hidden', item.type !== 'consumable');
+            
+            // Set up button actions
+            document.getElementById('equip-item-btn').onclick = () => equipItem(item);
+            document.getElementById('use-item-btn').onclick = () => useItem(item);
+            document.getElementById('sell-item-btn').onclick = () => sellItem(item);
+            
+            document.getElementById('item-details').classList.remove('hidden');
+        }
+
+        function equipItem(item) {
+            const player = gameState.player;
+            const slot = item.type;
+            
+            // Unequip current item if any
+            if (player.equipment[slot]) {
+                player.inventory.push(player.equipment[slot]);
+            }
+            
+            // Equip new item
+            player.equipment[slot] = item;
+            
+            // Apply stat bonuses
+            if (item.stats) {
+                Object.entries(item.stats).forEach(([stat, value]) => {
+                    player.stats[stat] += value;
+                });
+            }
+            
+            // Remove from inventory
+            const index = player.inventory.findIndex(i => i.id === item.id);
+            player.inventory.splice(index, 1);
+            
+            updateCharacterDisplay();
+            updateInventoryDisplay();
+            document.getElementById('item-details').classList.add('hidden');
+        }
+
+        function useItem(item) {
+            const player = gameState.player;
+            
+            if (item.effect === 'heal') {
+                player.hp = Math.min(player.maxHp, player.hp + item.value);
+                showFloatingText(`+${item.value} HP`, 150, 250, '#4ade80');
+            }
+            
+            // Remove from inventory
+            const index = player.inventory.findIndex(i => i.id === item.id);
+            player.inventory.splice(index, 1);
+            
+            updateCharacterDisplay();
+            updateInventoryDisplay();
+            document.getElementById('item-details').classList.add('hidden');
+        }
+
+        function sellItem(item) {
+            const player = gameState.player;
+            player.gold += item.sellPrice;
+            
+            // Remove from inventory
+            const index = player.inventory.findIndex(i => i.id === item.id);
+            player.inventory.splice(index, 1);
+            
+            updateCharacterDisplay();
+            updateInventoryDisplay();
+            document.getElementById('item-details').classList.add('hidden');
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize particle system
+            new ParticleSystem();
+            
+            // Tab switching
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const tab = e.target.dataset.tab;
+                    switchTab(tab);
+                });
+            });
+            
+            // Character creation
+            const nameInput = document.getElementById('name-input');
+            const createBtn = document.getElementById('create-character-btn');
+            let selectedClass = '';
+            
+            nameInput.addEventListener('input', validateCharacterCreation);
+            
+            document.querySelectorAll('.class-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    // Remove selection from all options
+                    document.querySelectorAll('.class-option').forEach(opt => {
+                        opt.classList.remove('tab-active');
+                    });
+                    
+                    // Select this option
+                    e.currentTarget.classList.add('tab-active');
+                    selectedClass = e.currentTarget.dataset.class;
+                    validateCharacterCreation();
+                });
+            });
+            
+            function validateCharacterCreation() {
+                const name = nameInput.value.trim();
+                const isValid = name.length >= 2 && selectedClass;
+                createBtn.disabled = !isValid;
+                createBtn.classList.toggle('opacity-50', !isValid);
+            }
+            
+            createBtn.addEventListener('click', () => {
+                if (!createBtn.disabled) {
+                    const name = nameInput.value.trim();
+                    const classInfo = classData[selectedClass];
+                    
+                    // Set up player
+                    gameState.player.name = name;
+                    gameState.player.class = selectedClass;
+                    gameState.player.stats = {...classInfo.stats};
+                    gameState.player.maxHp = gameState.player.stats.constitution * 10;
+                    gameState.player.hp = gameState.player.maxHp;
+                    
+                    // Give starting equipment
+                    gameState.player.inventory.push(
+                        {...items.find(i => i.name === 'Health Potion'), id: Date.now()},
+                        {...items.find(i => i.name === 'Iron Sword'), id: Date.now() + 1}
+                    );
+                    
+                    updateCharacterDisplay();
+                    startGame();
+                }
+            });
+            
+            // Combat actions
+            document.querySelectorAll('.combat-action').forEach(action => {
+                action.addEventListener('click', (e) => {
+                    if (gameState.combat.inCombat) {
+                        const actionType = e.currentTarget.dataset.action;
+                        performCombatAction(actionType);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
